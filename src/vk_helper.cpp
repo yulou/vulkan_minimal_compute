@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <vector>
 #include "vk_helper.h"
 
 void enumerate_device_groups(VkInstance instance) {
@@ -25,8 +25,7 @@ void enumerate_device_groups(VkInstance instance) {
         return;
     }
 
-    VkPhysicalDeviceGroupPropertiesKHR* groups =
-        calloc(groupCount, sizeof(VkPhysicalDeviceGroupPropertiesKHR));
+    std::vector<VkPhysicalDeviceGroupPropertiesKHR> groups(groupCount);
 
     for (uint32_t i = 0; i < groupCount; i++) {
         groups[i].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES_KHR;
@@ -36,12 +35,11 @@ void enumerate_device_groups(VkInstance instance) {
     result = vkEnumeratePhysicalDeviceGroupsKHR(
         instance,
         &groupCount,
-        groups
+        groups.data()
     );
 
     if (result != VK_SUCCESS) {
         printf("Failed to enumerate device groups\n");
-        free(groups);
         return;
     }
 
@@ -58,6 +56,4 @@ void enumerate_device_groups(VkInstance instance) {
             printf("  Device %u: %s\n", j, props.deviceName);
         }
     }
-
-    free(groups);
 }
