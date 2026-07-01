@@ -290,8 +290,6 @@ public:
             NULL,
             &instance));
         
-        // [DEBUG]
-        enumerate_device_groups(instance);
 
         /*
         Register a callback function for the extension VK_EXT_DEBUG_REPORT_EXTENSION_NAME, so that warnings emitted from the validation
@@ -406,6 +404,17 @@ public:
         float queuePriorities = 1.0;  // we only have one queue, so this is not that imporant. 
         queueCreateInfo.pQueuePriorities = &queuePriorities;
 
+        std::vector<VkPhysicalDeviceGroupPropertiesKHR> deviceGroups = enumerate_device_groups(instance);
+        VkPhysicalDeviceGroupPropertiesKHR selectedGroup = deviceGroups[3];
+        VkDeviceGroupDeviceCreateInfoKHR deviceGroupInfo = {
+            .sType = VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO_KHR,
+            .pNext = NULL,
+            .physicalDeviceCount = selectedGroup.physicalDeviceCount,
+            .pPhysicalDevices = selectedGroup.physicalDevices
+        };
+        const char* deviceExtensions[] = {
+            VK_KHR_DEVICE_GROUP_EXTENSION_NAME
+        };
         /*
         Now we create the logical device. The logical device allows us to interact with the physical
         device.
@@ -416,11 +425,13 @@ public:
         VkPhysicalDeviceFeatures deviceFeatures = {};
 
         deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        deviceCreateInfo.pNext = &deviceGroupInfo; // device group
         deviceCreateInfo.enabledLayerCount = enabledLayers.size();  // need to specify validation layers here as well.
         deviceCreateInfo.ppEnabledLayerNames = enabledLayers.data();
         deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo; // when creating the logical device, we also specify what queues it has.
         deviceCreateInfo.queueCreateInfoCount = 1;
         deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
+        deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions;
 
         VK_CHECK_RESULT(vkCreateDevice(physicalDevice, &deviceCreateInfo, NULL, &device)); // create logical device.
 

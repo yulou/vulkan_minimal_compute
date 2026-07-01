@@ -1,5 +1,5 @@
 #pragma once
 #include <vulkan/vulkan.h>
+#include <vector>
 
-
-void enumerate_device_groups(VkInstance instance);
+std::vector<VkPhysicalDeviceGroupPropertiesKHR> enumerate_device_groups(VkInstance instance);

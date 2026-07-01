@@ -2,14 +2,14 @@
 #include <vector>
 #include "vk_helper.h"
 
-void enumerate_device_groups(VkInstance instance) {
+std::vector<VkPhysicalDeviceGroupPropertiesKHR> enumerate_device_groups(VkInstance instance) {
     PFN_vkEnumeratePhysicalDeviceGroupsKHR vkEnumeratePhysicalDeviceGroupsKHR =
         (PFN_vkEnumeratePhysicalDeviceGroupsKHR)
         vkGetInstanceProcAddr(instance, "vkEnumeratePhysicalDeviceGroupsKHR");
 
     if (!vkEnumeratePhysicalDeviceGroupsKHR) {
         printf("VK_KHR_device_group not available\n");
-        return;
+        return std::vector<VkPhysicalDeviceGroupPropertiesKHR>();
     }
 
     uint32_t groupCount = 0;
@@ -22,7 +22,7 @@ void enumerate_device_groups(VkInstance instance) {
 
     if (result != VK_SUCCESS || groupCount == 0) {
         printf("No physical device groups found\n");
-        return;
+        return std::vector<VkPhysicalDeviceGroupPropertiesKHR>();
     }
 
     std::vector<VkPhysicalDeviceGroupPropertiesKHR> groups(groupCount);
@@ -40,7 +40,7 @@ void enumerate_device_groups(VkInstance instance) {
 
     if (result != VK_SUCCESS) {
         printf("Failed to enumerate device groups\n");
-        return;
+        return std::vector<VkPhysicalDeviceGroupPropertiesKHR>();
     }
 
     for (uint32_t i = 0; i < groupCount; i++) {
@@ -56,4 +56,5 @@ void enumerate_device_groups(VkInstance instance) {
             printf("  Device %u: %s\n", j, props.deviceName);
         }
     }
+    return groups;
 }
