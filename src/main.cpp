@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "lodepng.h" //Used for png encoding.
+#include "vk_helper.h"
 
 const int WIDTH = 3200; // Size of rendered mandelbrot set.
 const int HEIGHT = 2400; // Size of renderered mandelbrot set.
@@ -206,6 +207,7 @@ public:
             /*
             And then we simply check if VK_LAYER_LUNARG_standard_validation is among the supported layers.
             */
+            /*
             bool foundLayer = false;
             for (VkLayerProperties prop : layerProperties) {
                 
@@ -220,7 +222,7 @@ public:
                 throw std::runtime_error("Layer VK_LAYER_LUNARG_standard_validation not supported\n");
             }
             enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation"); // Alright, we can use this layer.
-
+            */
             /*
             We need to enable an extension named VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
             in order to be able to print the warnings emitted by the validation layer.
@@ -247,6 +249,8 @@ public:
                 throw std::runtime_error("Extension VK_EXT_DEBUG_REPORT_EXTENSION_NAME not supported\n");
             }
             enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+            enabledExtensions.push_back(VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME);
+            enabledExtensions.push_back(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
         }		
 
         /*
@@ -285,6 +289,9 @@ public:
             &createInfo,
             NULL,
             &instance));
+        
+        // [DEBUG]
+        enumerate_device_groups(instance);
 
         /*
         Register a callback function for the extension VK_EXT_DEBUG_REPORT_EXTENSION_NAME, so that warnings emitted from the validation
