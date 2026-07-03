@@ -250,7 +250,6 @@ public:
             }
             enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
             enabledExtensions.push_back(VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME);
-            enabledExtensions.push_back(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
         }		
 
         /*
@@ -329,7 +328,42 @@ public:
 
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+        for (int i = 0; i < deviceCount; ++i){
+            // Assume 'physicalDevice' is a valid VkPhysicalDevice handle.
+            VkPhysicalDeviceProperties deviceProperties;
+            vkGetPhysicalDeviceProperties(devices[i], &deviceProperties);
 
+            // Now you can access the information:
+            printf("Device Name: %s\n", deviceProperties.deviceName);
+            printf("API Version: %u\n", deviceProperties.apiVersion);
+            printf("Vendor ID: 0x%04x\n", deviceProperties.vendorID);
+            printf("Device ID: 0x%04x\n", deviceProperties.deviceID);
+
+            // Check the device type
+            if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+                printf("Device Type: Discrete GPU\n");
+                // Fresh initialization
+                VkPhysicalDeviceIDProperties deviceIDProperties = {};
+                deviceIDProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES;
+                deviceIDProperties.pNext = nullptr;
+
+                VkPhysicalDeviceProperties2 deviceProperties2 = {};
+                deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+                deviceProperties2.pNext = &deviceIDProperties;
+
+                std::printf("Before vkGetPhysicalDeviceProperties2 for device %u\n", i);
+                vkGetPhysicalDeviceProperties2(devices[i], &deviceProperties2);
+                std::printf("After vkGetPhysicalDeviceProperties2 for device %u\n", i);
+                // 3. Print the UUID
+                std::printf("Device UUID: ");
+                for (int i = 0; i < VK_UUID_SIZE; i++) {
+                    std::printf("%02x", deviceIDProperties.deviceUUID[i]);
+                }
+                std::printf("\n");
+            } else if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+                printf("Device Type: Integrated GPU\n");
+            }
+        }
         /*
         Next, we choose a device that can be used for our purposes. 
 
